@@ -26,7 +26,9 @@ RUN cd acezero && \
 RUN echo "source activate ace0" > ~/.bashrc && \
     conda run -n ace0 pip install ipykernel && \
     conda install -n ace0 -c conda-forge libstdcxx-ng && \
-    /opt/conda/envs/ace0/bin/python -m ipykernel install --user --name=ace0
+    /opt/conda/envs/ace0/bin/python -m ipykernel install --user --name=ace0 \
+
+RUN conda run -n ace0 python -m pip install joblib scipy scikit-learn
 
 RUN cd acezero/dsacstar && \
     conda run -n ace0 python setup.py install
