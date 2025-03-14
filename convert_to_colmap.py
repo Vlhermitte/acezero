@@ -3,7 +3,6 @@
 import cv2
 import os
 from pathlib import Path
-import open3d as o3d
 import numpy as np
 import trimesh
 import argparse
@@ -18,15 +17,16 @@ def save_cameras(pose_file, sparse_dir):
     with open(pose_file, 'r') as f:
         for line in f:
             tokens = line.split()
-            rgb_files.append(tokens[0])
-            qw, qx, qy, qz = [float(t) for t in tokens[1:5]]
-            rots.append([qw, qx, qy, qz])
-            tx, ty, tz = [float(t) for t in tokens[5:8]]
-            translations.append([tx, ty, tz])
-            focal_length = float(tokens[8])
             confidence = float(tokens[9])
-            focal_lengths.append(focal_length)
-            confidences.append(confidence)
+            if confidence >= 1000:  # Acezero uses 1000 confidence as a flag for invalid poses
+                rgb_files.append(tokens[0])
+                qw, qx, qy, qz = [float(t) for t in tokens[1:5]]
+                rots.append([qw, qx, qy, qz])
+                tx, ty, tz = [float(t) for t in tokens[5:8]]
+                translations.append([tx, ty, tz])
+                focal_length = float(tokens[8])
+                focal_lengths.append(focal_length)
+                confidences.append(confidence)
 
     rgb_image = cv2.imread(rgb_files[0])
     imgs_shape = rgb_image.shape #(H,W,C)
@@ -50,15 +50,17 @@ def save_images_txt(pose_file, sparse_dir):
     with open(pose_file, 'r') as f:
         for line in f:
             tokens = line.split()
-            rgb_files.append(tokens[0])
-            qw, qx, qy, qz = [float(t) for t in tokens[1:5]]
-            rots.append([qw, qx, qy, qz])
-            tx, ty, tz = [float(t) for t in tokens[5:8]]
-            translations.append([tx, ty, tz])
-            focal_length = float(tokens[8])
             confidence = float(tokens[9])
-            focal_lengths.append(focal_length)
-            confidences.append(confidence)
+            if confidence >= 1000:  # Acezero uses 1000 confidence as a flag for invalid poses
+                rgb_files.append(tokens[0])
+                qw, qx, qy, qz = [float(t) for t in tokens[1:5]]
+                rots.append([qw, qx, qy, qz])
+                tx, ty, tz = [float(t) for t in tokens[5:8]]
+                translations.append([tx, ty, tz])
+                focal_length = float(tokens[8])
+                confidence = float(tokens[9])
+                focal_lengths.append(focal_length)
+                confidences.append(confidence)
 
     with open(images_file, 'w') as f:
         f.write("# Image list with two lines of data per image:\n")
@@ -71,6 +73,8 @@ def save_images_txt(pose_file, sparse_dir):
             f.write(f"{i} {qw} {qx} {qy} {qz} {tx} {ty} {tz} {i} {name}.png\n\n")
 
 def save_point_cloud(pt_file, sparse_dir):
+    # import open3d here to avoid crash before performing the images.txt and cameras.txt conversion
+    import open3d as o3d
     cloud = o3d.io.read_point_cloud(pt_file, format='xyzrgb')
     pts=np.asarray(cloud.points).reshape(-1,3)[::3]
     colors=np.asarray(cloud.colors).reshape(-1,3)[::3]
@@ -137,12 +141,6 @@ if __name__ == '__main__':
     pose_file=os.path.join(src_dir, 'poses_final.txt')
     pt_file=os.path.join(src_dir, 'point_cloud_out.txt')
 
-    # sparse_dir=os.path.join(src_dir, 'colmap/sparse/0')
-    if dst_dir is None:
-        sparse_dir = os.path.join(src_dir.rsplit('/', 1)[0], 'colmap/sparse/0')
-    if not os.path.exists(sparse_dir):
-        os.makedirs(sparse_dir)
-
-    save_cameras(pose_file, sparse_dir)
-    save_images_txt(pose_file, sparse_dir)
-    save_point_cloud(pt_file, sparse_dir)
+    save_cameras(pose_file, dst_dir)
+    save_images_txt(pose_file, dst_dir)
+    save_point_cloud(pt_file, dst_dir)
