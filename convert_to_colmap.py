@@ -5,9 +5,10 @@ import trimesh
 import argparse
 import pycolmap
 from PIL import Image as PILImage
+from typing import Tuple, List
 
 
-def read_pose_file(pose_file) -> tuple[list[pycolmap.Image], list[pycolmap.Camera]]:
+def read_pose_file(pose_file) -> Tuple[List[pycolmap.Image], List[pycolmap.Camera]]:
     # assume all images are the same
     images = []
     cameras = []
