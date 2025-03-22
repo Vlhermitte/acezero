@@ -1,10 +1,10 @@
-import cv2
 import os
 from pathlib import Path
 import numpy as np
 import trimesh
 import argparse
 import pycolmap
+from PIL import Image as PILImage
 
 
 def read_pose_file(pose_file) -> tuple[list[pycolmap.Image], list[pycolmap.Camera]]:
@@ -16,9 +16,9 @@ def read_pose_file(pose_file) -> tuple[list[pycolmap.Image], list[pycolmap.Camer
             tokens = line.split()
             img_path = tokens[0].split('/')[-6:]
             img_path = '../' + '/'.join(img_path)
-            img = cv2.imread(img_path)
+            with PILImage.open(img_path) as pil_img:
+                width, height = pil_img.size
             img_basename_without_ext = os.path.basename(img_path).split('.')[0]
-            height, width, _ = img.shape
             qw, qx, qy, qz = [float(t) for t in tokens[1:5]]
             tx, ty, tz = [float(t) for t in tokens[5:8]]
             focal_length = float(tokens[8])
