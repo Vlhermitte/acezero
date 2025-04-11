@@ -5,6 +5,7 @@ import logging
 import shutil
 from pathlib import Path
 import os
+import sys
 import numpy as np
 import argparse
 from distutils.util import strtobool
@@ -216,6 +217,7 @@ if __name__ == '__main__':
     # In some cases, this is redundant - when the dataset is small and the seed scoring already registered all images
     # AND no visualisation was requested. However, for small datasets, this is fast anyway.
     reg_cmd = [
+        sys.executable,
         zutil.REGISTER_EXE,
         opt.rgb_files,
         opt.results_folder / f"{iteration_id}.pt",
@@ -277,6 +279,7 @@ if __name__ == '__main__':
         _logger.info(f"Registering all images to map {iteration_id}.")
 
         reg_cmd = [
+            sys.executable,  # use the current Python executable
             zutil.REGISTER_EXE,
             opt.rgb_files,
             opt.results_folder / f"{iteration_id}.pt",
@@ -383,7 +386,8 @@ if __name__ == '__main__':
             vis_buffer_file = zutil.get_render_path(opt.results_folder) / f"{iteration_id}_mapping.pkl",
             _logger.info(f"Exporting point cloud from visualisation buffer file: {vis_buffer_file}")
 
-            zutil.run_cmd(["./export_point_cloud.py",
+            zutil.run_cmd([sys.executable,
+                           "./export_point_cloud.py",
                            opt.results_folder / "pc_final.ply",
                            "--visualization_buffer", vis_buffer_file,
                            "--convention", "opencv",
@@ -391,7 +395,8 @@ if __name__ == '__main__':
         else:
             _logger.info(f"Exporting point cloud from last network and pose file.")
 
-            zutil.run_cmd(["./export_point_cloud.py",
+            zutil.run_cmd([sys.executable,
+                           "./export_point_cloud.py",
                            opt.results_folder / "pc_final.ply",
                            "--network", opt.results_folder / f"{iteration_id}.pt",
                            "--pose_file", opt.results_folder / f"poses_final.txt",

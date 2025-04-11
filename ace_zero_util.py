@@ -76,6 +76,7 @@ def get_refit_mapping_cmd(rgb_files, iteration_id, out_dir, opt):
 
     # specify base mapping call with exe, dataset and output map file
     mapping_cmd = [
+        sys.executable, # use the current Python executable
         TRAINING_EXE,
         rgb_files,
         out_dir / f"{iteration_id}.pt",
@@ -124,7 +125,9 @@ def get_base_mapping_cmd(rgb_files, iteration_id, out_dir, opt):
     """
 
     # specify base mapping call with exe, dataset and output map file
+    print("Python : " + sys.executable)
     mapping_cmd = [
+        sys.executable, # use the current Python executable
         TRAINING_EXE,
         rgb_files,
         out_dir / f"{iteration_id}.pt",
@@ -240,6 +243,7 @@ def map_seed(args):
 
     # scoring the seed
     scoring_cmd = [
+        sys.executable, # use the current Python executable
         REGISTER_EXE,
         rgb_files,
         out_dir / f"{iteration_id}.pt",
