@@ -9,15 +9,16 @@ from PIL import Image as PILImage
 from typing import Tuple, List
 
 
-def read_pose_file(pose_file) -> Tuple[List[pycolmap.Image], List[pycolmap.Camera]]:
+def read_pose_file(pose_file, images_dir) -> Tuple[List[pycolmap.Image], List[pycolmap.Camera]]:
     # assume all images are the same
+    images_names = os.listdir(images_dir)
     images = []
     cameras = []
     with open(pose_file, 'r') as f:
         for i, line in enumerate(f):
             tokens = line.split()
-            img_path = tokens[0].split('/')[-6:]
-            img_path = '../' + '/'.join(img_path)
+            img_name = os.path.basename(tokens[0])
+            img_path = os.path.join(images_dir, img_name)
             with PILImage.open(img_path) as pil_img:
                 width, height = pil_img.size
             img_basename = os.path.basename(img_path)
@@ -56,23 +57,30 @@ if __name__ == '__main__':
     parser.add_argument(
         '--src_dir',
         type=str,
-        default='../data/results/acezero/TanksAndTemples/Ignatius/acezero_format/',
+        default='../data/results/acezero/MipNerf360/bicycle/acezero_format/',
         help='source directory'
     )
     parser.add_argument(
         '--dst_dir',
-        default='../data/results/acezero/TanksAndTemples/Ignatius/colmap/sparse/0',
+        default='../data/results/acezero/MipNerf360/bicycle/colmap/sparse/0',
         type=str,
         help='destination directory'
+    )
+    parser.add_argument(
+        '--images_dir',
+        default='../data/datasets/MipNerf360/bicycle/images/',
+        type=str,
+        help='images directory'
     )
 
     src_dir=parser.parse_args().src_dir
     dst_dir=parser.parse_args().dst_dir
+    images_dir=parser.parse_args().images_dir
 
     pose_file=os.path.join(src_dir, 'poses_final.txt')
     pt_file=os.path.join(src_dir, 'pc_final.ply')
 
-    images, cameras = read_pose_file(pose_file)
+    images, cameras = read_pose_file(pose_file, images_dir)
 
     reconstruction = pycolmap.Reconstruction()
     for image, camera in zip(images, cameras):
